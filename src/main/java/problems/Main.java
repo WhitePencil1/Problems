@@ -5,46 +5,46 @@ import java.util.*;
 
 public class Main {
 	
-	public static int[] mergeSort(int[] arr) {
-		if(arr.length == 1) {
-			return arr;
+	public static List<Pair> mergeClumbs(Pair[] clumbs) {
+		if(clumbs.length == 0) {
+			return List.of();
 		}
+		Arrays.sort(clumbs, (clumb1, clumb2) -> clumb1.from() - clumb2.from());
 		
-		int[] sortedL = mergeSort(Arrays.copyOfRange(arr, 0, arr.length / 2));
-		int[] sortedR = mergeSort(Arrays.copyOfRange(arr, arr.length / 2, arr.length));
-		int[] result = new int[sortedL.length + sortedR.length];
+		List<Pair> result = new ArrayList<>();
 		
-		int l = 0;
-		int r = 0;
-		int i = 0;
-		while(l < sortedL.length && r < sortedR.length) {
-			if(sortedL[l] <= sortedR[r]) {
-				result[i] = sortedL[l];
-				l++;
+		int startClumb = clumbs[0].from();
+		int endClumb = clumbs[0].to();
+		
+		for(int i = 1; i < clumbs.length; i++) {
+			Pair next = clumbs[i];
+			
+			if(next.from() <= endClumb) {
+				//Пересечение
+				endClumb = Math.max(endClumb, next.to());
 			}
 			else {
-				result[i] = sortedR[r];
-				r++;
+				result.add(new Pair(startClumb, endClumb));
+				startClumb = next.from();
+				endClumb = next.to();
 			}
-			i++;
-		}
-		while(l < sortedL.length) {
-			result[i] = sortedL[l];
-			i++;
-			l++;
-		}
-		while(r < sortedR.length) {
-			result[i] = sortedR[r];
-			i++;
-			r++;
 		}
 		
+		result.add(new Pair(startClumb, endClumb));
 		return result;
 	}
 	
 	public static void main(String[] args) {	
-		int[] arr = {11, 2, 9, 7, 1};
+		Pair p1 = new Pair(7, 8);
+		Pair p2 = new Pair(7, 8);
+		Pair p3 = new Pair(2, 3);
+		Pair p4 = new Pair(6, 10);
 		
-		System.out.println(Arrays.toString(mergeSort(arr)));
+		List<Pair> result = mergeClumbs(new Pair[] {p1, p2, p3, p4});
+		
+		System.out.println(result.get(0).from() + " " + result.get(0).to());
+		System.out.println(result.get(1).from() + " " + result.get(1).to());
+		
+		System.out.println(Math.max(6, (Integer) null));
 	}
 }
