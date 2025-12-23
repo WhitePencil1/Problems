@@ -1,50 +1,80 @@
 package problems;
 
+import java.io.*;
+
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 public class Main {
 	
-	public static List<Pair> mergeClumbs(Pair[] clumbs) {
-		if(clumbs.length == 0) {
-			return List.of();
-		}
-		Arrays.sort(clumbs, (clumb1, clumb2) -> clumb1.from() - clumb2.from());
+	public static String mainDfs(List<List<Integer>> adjList, int startEdge) {
+		Colors[] colors = new Colors[adjList.size()];
+		Arrays.fill(colors, Colors.WHITE);
+		return getDfsSequence(adjList, startEdge, colors);
+	}
+
+	public static String getDfsSequence(List<List<Integer>> adjList, int startEdge, Colors[] colors) {
+		Deque<Integer> stack = new ArrayDeque<>();
+		StringBuilder resultSequence = new StringBuilder();
 		
-		List<Pair> result = new ArrayList<>();
-		
-		int startClumb = clumbs[0].from();
-		int endClumb = clumbs[0].to();
-		
-		for(int i = 1; i < clumbs.length; i++) {
-			Pair next = clumbs[i];
+		stack.push(startEdge);
+		while(!stack.isEmpty()) {
 			
-			if(next.from() <= endClumb) {
-				//Пересечение
-				endClumb = Math.max(endClumb, next.to());
+			Integer vertex = stack.pop();
+			
+			
+			if(colors[vertex] == Colors.WHITE) {
+				colors[vertex] = Colors.GRAY;
+				resultSequence.append(vertex + " ");
+				for(var adjVertex : adjList.get(vertex)) {
+					if(colors[adjVertex] == Colors.WHITE) {
+						stack.push(adjVertex);
+					}
+				}	
 			}
-			else {
-				result.add(new Pair(startClumb, endClumb));
-				startClumb = next.from();
-				endClumb = next.to();
+			else if(colors[vertex] == Colors.GRAY) {
+				colors[vertex] = Colors.BLACK;
 			}
+			
 		}
-		
-		result.add(new Pair(startClumb, endClumb));
-		return result;
+		return resultSequence.toString();
 	}
 	
+	public static List<List<Integer>> getAdjacencyList(Edge[] edges, int vertexNum) {
+		List<List<Integer>> resultList = new ArrayList<>();
+		
+		for (int i = 0; i <= vertexNum; i++) {
+			resultList.add(new ArrayList<>());
+		}
+		
+		for(int i = 0; i < edges.length; i++) {
+			int curVertex = edges[i].start;
+			int reverseVertex = edges[i].end;
+			
+			resultList.get(curVertex).add(reverseVertex);
+			resultList.get(reverseVertex).add(curVertex);
+		}
+		
+		for(int i = 0; i < resultList.size(); i++) {
+			Collections.sort(resultList.get(i), (a, b) -> b - a);
+		}
+		return resultList;
+	}
+	
+	
+	
+	public record Edge(int start, int end) {};
+	
+	public enum Colors {WHITE, BLACK, GRAY};
+	
 	public static void main(String[] args) {	
-		Pair p1 = new Pair(7, 8);
-		Pair p2 = new Pair(7, 8);
-		Pair p3 = new Pair(2, 3);
-		Pair p4 = new Pair(6, 10);
+		int vertexNum = 2;
+		int startEdge = 1;
+		Edge[] edges = {new Edge(1, 2)};
 		
-		List<Pair> result = mergeClumbs(new Pair[] {p1, p2, p3, p4});
 		
-		System.out.println(result.get(0).from() + " " + result.get(0).to());
-		System.out.println(result.get(1).from() + " " + result.get(1).to());
-		
-		System.out.println(Math.max(6, (Integer) null));
+		List<List<Integer>> adjacList = getAdjacencyList(edges, vertexNum);
+		System.out.println(mainDfs(adjacList, startEdge));
 	}
 }
