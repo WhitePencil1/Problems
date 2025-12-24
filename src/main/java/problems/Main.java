@@ -1,45 +1,48 @@
 package problems;
 
 import java.io.*;
-
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 public class Main {
 	
-	public static String mainDfs(List<List<Integer>> adjList, int startEdge) {
-		Colors[] colors = new Colors[adjList.size()];
-		Arrays.fill(colors, Colors.WHITE);
-		return getDfsSequence(adjList, startEdge, colors);
-	}
-
-	public static String getDfsSequence(List<List<Integer>> adjList, int startEdge, Colors[] colors) {
-		Deque<Integer> stack = new ArrayDeque<>();
-		StringBuilder resultSequence = new StringBuilder();
+	
+	public static List<List<Integer>> getComponents(List<List<Integer>> list) {
 		
-		stack.push(startEdge);
-		while(!stack.isEmpty()) {
-			
-			Integer vertex = stack.pop();
-			
-			
-			if(colors[vertex] == Colors.WHITE) {
-				colors[vertex] = Colors.GRAY;
-				resultSequence.append(vertex + " ");
-				for(var adjVertex : adjList.get(vertex)) {
-					if(colors[adjVertex] == Colors.WHITE) {
-						stack.push(adjVertex);
+		int[] colors = new int[list.size()];
+		Arrays.fill(colors, 0);
+		int colorsCounter = 0;
+		
+		Deque<Integer> stack = new ArrayDeque<>();
+		for(int i = 1; i < list.size(); i++) {
+			if(colors[i] != 0) {
+				continue;
+			}
+			colorsCounter++;
+			stack.push(i);
+			while(!stack.isEmpty()) {
+				int v = stack.pop();
+				if(colors[v] == 0) {
+					colors[v] = colorsCounter;
+					for(var child : list.get(v)) {
+						if(colors[child] == 0) {
+							stack.push(child);
+						}
 					}
-				}	
+				}
 			}
-			else if(colors[vertex] == Colors.GRAY) {
-				colors[vertex] = Colors.BLACK;
-			}
-			
 		}
-		return resultSequence.toString();
+
+		List<List<Integer>> components = new ArrayList<>();
+		for(int i = 0; i <= colorsCounter; i++) {
+			components.add(new ArrayList<>());
+		}
+		for(int i = 1; i < colors.length; i++) {
+			components.get(colors[i]).add(i);
+		}
+		return components;
 	}
+	
 	
 	public static List<List<Integer>> getAdjacencyList(Edge[] edges, int vertexNum) {
 		List<List<Integer>> resultList = new ArrayList<>();
@@ -55,7 +58,7 @@ public class Main {
 			resultList.get(curVertex).add(reverseVertex);
 			resultList.get(reverseVertex).add(curVertex);
 		}
-		
+
 		for(int i = 0; i < resultList.size(); i++) {
 			Collections.sort(resultList.get(i), (a, b) -> b - a);
 		}
@@ -63,18 +66,11 @@ public class Main {
 	}
 	
 	
-	
 	public record Edge(int start, int end) {};
-	
-	public enum Colors {WHITE, BLACK, GRAY};
-	
 	public static void main(String[] args) {	
-		int vertexNum = 2;
-		int startEdge = 1;
-		Edge[] edges = {new Edge(1, 2)};
-		
-		
-		List<List<Integer>> adjacList = getAdjacencyList(edges, vertexNum);
-		System.out.println(mainDfs(adjacList, startEdge));
+		int vertexNum = 4;
+		List<List<Integer>> adjList = getAdjacencyList(new Edge[] {new Edge(2, 3), new Edge(2, 1), new Edge(4, 3)}, vertexNum);
+		List<List<Integer>> components = getComponents(adjList);
+		System.out.println(components);
 	}
 }
